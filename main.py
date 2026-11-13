@@ -52,7 +52,7 @@ class QuizGame:
             if choice == 1:
                 self.play()
             elif choice == 2:
-                print("[퀴즈 추가] 준비 중입니다.")
+                self.add_quiz()
             elif choice == 3:
                 print("[퀴즈 목록] 준비 중입니다.")
             elif choice == 4:
@@ -86,6 +86,20 @@ class QuizGame:
         print("=" * 40)
         print(f"결과: {total}문제 중 {correct}문제 정답! ({score}점)")
         print("=" * 40)
+
+    def add_quiz(self):
+        """질문, 보기 4개, 정답 번호를 입력받아 새 퀴즈를 추가한다."""
+        print("\n[퀴즈 추가] 새 문제를 입력하세요.")
+        question = read_text("질문: ")
+
+        choices = []
+        for i in range(1, 5):
+            choices.append(read_text(f"보기 {i}: "))
+
+        answer = read_number("정답 번호 (1-4): ", 1, 4)
+
+        self.quizzes.append(Quiz(question, choices, answer))
+        print(f"퀴즈가 추가되었습니다. (현재 {len(self.quizzes)}문제)")
 
 
 def show_menu():
@@ -124,6 +138,16 @@ def read_number(prompt, min_value, max_value):
             continue
 
         return number
+
+
+def read_text(prompt):
+    """빈 문자열이 아닌 글자가 들어올 때까지 다시 묻는다. (앞뒤 공백 제거)"""
+    while True:
+        text = input(prompt).strip()
+        if text == "":
+            print("입력이 비어 있습니다. 내용을 입력하세요.")
+            continue
+        return text
 
 
 # 이 파일을 직접 실행했을 때의 시작점
