@@ -279,3 +279,5 @@ Git 기록은 아래 명령으로 확인한다.
 git log --oneline --graph --all
 git rev-list --count HEAD
 ```
+
+별도 복제본에서 README를 수정하고 GitHub에 올려보았다.
