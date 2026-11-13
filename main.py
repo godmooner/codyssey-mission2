@@ -54,7 +54,7 @@ class QuizGame:
             elif choice == 2:
                 self.add_quiz()
             elif choice == 3:
-                print("[퀴즈 목록] 준비 중입니다.")
+                self.list_quizzes()
             elif choice == 4:
                 print("[점수 확인] 준비 중입니다.")
             else:
@@ -100,6 +100,16 @@ class QuizGame:
 
         self.quizzes.append(Quiz(question, choices, answer))
         print(f"퀴즈가 추가되었습니다. (현재 {len(self.quizzes)}문제)")
+
+    def list_quizzes(self):
+        """등록된 퀴즈의 질문을 번호와 함께 보여준다."""
+        if not self.quizzes:
+            print("등록된 퀴즈가 없습니다.")
+            return
+
+        print(f"\n[퀴즈 목록] 총 {len(self.quizzes)}문제")
+        for number, quiz in enumerate(self.quizzes, start=1):
+            print(f"{number}. {quiz.question}")
 
 
 def show_menu():
