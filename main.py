@@ -1,5 +1,5 @@
 # 나만의 퀴즈 게임 (Codyssey 미션 E1-2)
-# 흐름: 메뉴 보여주기 → 번호 입력받기 → 고른 기능 실행 → 다시 메뉴 (5번이면 종료)
+# 구조: Quiz(문제 하나) → QuizGame(게임 전체) → 도우미 함수 → 시작점
 
 
 class Quiz:
@@ -37,23 +37,55 @@ def create_default_quizzes():
     ]
 
 
-def main():
-    """게임 전체 흐름을 담당한다."""
-    while True:
-        show_menu()
-        choice = read_number("선택: ", 1, 5)
+class QuizGame:
+    """게임 전체: 퀴즈 목록을 들고 있고, 메뉴의 각 기능을 method로 가진다."""
 
-        if choice == 1:
-            print("[퀴즈 풀기] 준비 중입니다.")
-        elif choice == 2:
-            print("[퀴즈 추가] 준비 중입니다.")
-        elif choice == 3:
-            print("[퀴즈 목록] 준비 중입니다.")
-        elif choice == 4:
-            print("[점수 확인] 준비 중입니다.")
-        else:
-            print("게임을 종료합니다.")
-            break
+    def __init__(self):
+        self.quizzes = create_default_quizzes()
+
+    def run(self):
+        """메뉴를 반복해서 보여주고, 고른 번호의 기능을 실행한다."""
+        while True:
+            show_menu()
+            choice = read_number("선택: ", 1, 5)
+
+            if choice == 1:
+                self.play()
+            elif choice == 2:
+                print("[퀴즈 추가] 준비 중입니다.")
+            elif choice == 3:
+                print("[퀴즈 목록] 준비 중입니다.")
+            elif choice == 4:
+                print("[점수 확인] 준비 중입니다.")
+            else:
+                print("게임을 종료합니다.")
+                break
+
+    def play(self):
+        """저장된 퀴즈를 차례로 출제하고 결과를 보여준다."""
+        if not self.quizzes:
+            print("등록된 퀴즈가 없습니다. 먼저 퀴즈를 추가하세요.")
+            return
+
+        total = len(self.quizzes)
+        correct = 0
+        print(f"\n퀴즈를 시작합니다! (총 {total}문제)")
+
+        for number, quiz in enumerate(self.quizzes, start=1):
+            print("-" * 40)
+            quiz.display(number)
+            user_answer = read_number("정답 입력: ", 1, 4)
+
+            if quiz.is_correct(user_answer):
+                print("정답입니다!")
+                correct += 1
+            else:
+                print(f"오답입니다. 정답은 {quiz.answer}번입니다.")
+
+        score = correct * 100 // total
+        print("=" * 40)
+        print(f"결과: {total}문제 중 {correct}문제 정답! ({score}점)")
+        print("=" * 40)
 
 
 def show_menu():
@@ -96,7 +128,8 @@ def read_number(prompt, min_value, max_value):
 
 # 이 파일을 직접 실행했을 때의 시작점
 if __name__ == "__main__":
+    game = QuizGame()
     try:
-        main()
+        game.run()
     except (KeyboardInterrupt, EOFError):
         print("\n입력이 중단되어 게임을 종료합니다.")
