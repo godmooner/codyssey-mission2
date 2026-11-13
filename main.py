@@ -1,6 +1,12 @@
 # 나만의 퀴즈 게임 (Codyssey 미션 E1-2)
 # 구조: Quiz(문제 하나) → QuizGame(게임 전체) → 도우미 함수 → 시작점
 
+import json
+from pathlib import Path
+
+
+STATE_FILE = Path(__file__).with_name("state.json")
+
 
 class Quiz:
     """퀴즈 한 문제: 질문, 보기 4개, 정답 번호(1~4)를 한 묶음으로 관리한다."""
@@ -43,6 +49,7 @@ class QuizGame:
     def __init__(self):
         self.quizzes = create_default_quizzes()
         self.best_score = None  # 아직 한 번도 안 풀었으면 None
+        self.load()
 
     def run(self):
         """메뉴를 반복해서 보여주고, 고른 번호의 기능을 실행한다."""
@@ -59,6 +66,7 @@ class QuizGame:
             elif choice == 4:
                 self.show_score()
             else:
+                self.save()
                 print("게임을 종료합니다.")
                 break
 
@@ -89,6 +97,7 @@ class QuizGame:
         # 처음 푼 경우이거나 기존 최고 점수보다 높으면 갱신
         if self.best_score is None or score > self.best_score:
             self.best_score = score
+            self.save()
             print("최고 점수를 갱신했습니다!")
         print("=" * 40)
 
@@ -104,6 +113,7 @@ class QuizGame:
         answer = read_number("정답 번호 (1-4): ", 1, 4)
 
         self.quizzes.append(Quiz(question, choices, answer))
+        self.save()
         print(f"퀴즈가 추가되었습니다. (현재 {len(self.quizzes)}문제)")
 
     def list_quizzes(self):
@@ -122,6 +132,74 @@ class QuizGame:
             print("아직 퀴즈를 푼 기록이 없습니다. 먼저 퀴즈를 풀어 보세요.")
         else:
             print(f"최고 점수: {self.best_score}점")
+
+    def save(self):
+        """퀴즈 목록과 최고 점수를 JSON 파일에 저장한다."""
+        quizzes = []
+        for quiz in self.quizzes:
+            quizzes.append({
+                "question": quiz.question,
+                "choices": quiz.choices,
+                "answer": quiz.answer,
+            })
+
+        data = {
+            "quizzes": quizzes,
+            "best_score": self.best_score,
+        }
+
+        try:
+            with open(STATE_FILE, "w", encoding="utf-8") as file:
+                json.dump(data, file, ensure_ascii=False, indent=2)
+        except OSError as error:
+            print(f"데이터를 저장하지 못했습니다: {error}")
+
+    def load(self):
+        """저장된 데이터를 읽는다. 파일이 없거나 손상되면 기본 데이터를 쓴다."""
+        try:
+            with open(STATE_FILE, "r", encoding="utf-8") as file:
+                data = json.load(file)
+
+            if not isinstance(data, dict) or not isinstance(data["quizzes"], list):
+                raise ValueError("퀴즈 목록의 형식이 올바르지 않습니다.")
+
+            best_score = data["best_score"]
+            if best_score is not None:
+                if type(best_score) is not int or not 0 <= best_score <= 100:
+                    raise ValueError("최고 점수의 형식이 올바르지 않습니다.")
+
+            quizzes = []
+            for item in data["quizzes"]:
+                question = item["question"]
+                choices = item["choices"]
+                answer = item["answer"]
+
+                if not isinstance(question, str) or not question.strip():
+                    raise ValueError("질문이 올바르지 않습니다.")
+                if not isinstance(choices, list) or len(choices) != 4:
+                    raise ValueError("보기는 4개여야 합니다.")
+                for choice in choices:
+                    if not isinstance(choice, str) or not choice.strip():
+                        raise ValueError("보기가 올바르지 않습니다.")
+                if type(answer) is not int or not 1 <= answer <= 4:
+                    raise ValueError("정답 번호가 올바르지 않습니다.")
+
+                quizzes.append(Quiz(question, choices, answer))
+
+        except FileNotFoundError:
+            return
+        except (ValueError, KeyError, TypeError, UnicodeError):
+            # JSONDecodeError도 ValueError에 포함된다.
+            print("저장 파일이 손상되었거나 형식이 잘못되었습니다. 기본 데이터를 사용합니다.")
+            return
+        except OSError as error:
+            print(f"데이터를 불러오지 못했습니다. 기본 데이터를 사용합니다: {error}")
+            return
+
+        # 전체 데이터가 정상일 때만 게임에 반영한다.
+        self.quizzes = quizzes
+        self.best_score = best_score
+        print(f"저장된 데이터를 불러왔습니다. (퀴즈 {len(self.quizzes)}개)")
 
 
 def show_menu():
@@ -178,4 +256,5 @@ if __name__ == "__main__":
     try:
         game.run()
     except (KeyboardInterrupt, EOFError):
+        game.save()
         print("\n입력이 중단되어 게임을 종료합니다.")
