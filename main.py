@@ -2,6 +2,41 @@
 # 흐름: 메뉴 보여주기 → 번호 입력받기 → 고른 기능 실행 → 다시 메뉴 (5번이면 종료)
 
 
+class Quiz:
+    """퀴즈 한 문제: 질문, 보기 4개, 정답 번호(1~4)를 한 묶음으로 관리한다."""
+
+    def __init__(self, question, choices, answer):
+        self.question = question  # 질문 (str)
+        self.choices = choices    # 보기 4개 (list of str)
+        self.answer = answer      # 정답 번호 1~4 (int)
+
+    def display(self, number):
+        """문제 번호와 질문, 보기 4개를 출력한다."""
+        print(f"[문제 {number}] {self.question}")
+        for i, choice in enumerate(self.choices, start=1):
+            print(f"  {i}. {choice}")
+
+    def is_correct(self, user_answer):
+        """사용자가 고른 번호가 정답이면 True, 아니면 False."""
+        return user_answer == self.answer
+
+
+def create_default_quizzes():
+    """처음 실행할 때 쓰는 기본 퀴즈 5개 (주제: 미션 1 복습 - 터미널·Docker·Git)."""
+    return [
+        Quiz("현재 작업 중인 폴더의 경로를 출력하는 명령어는?",
+             ["ls", "pwd", "cd", "mkdir"], 2),
+        Quiz("chmod 755를 적용했을 때 소유자(owner)가 가진 권한은?",
+             ["읽기만", "읽기+쓰기", "읽기+쓰기+실행", "실행만"], 3),
+        Quiz("docker run -p 8080:80 에서 8080은 어디의 포트인가?",
+             ["컨테이너", "호스트(내 컴퓨터)", "Docker Hub", "이미지"], 2),
+        Quiz("컨테이너를 삭제해도 데이터를 남기려면 무엇을 사용해야 하나?",
+             ["Dockerfile", "docker logs", "Docker volume", "docker ps -a"], 3),
+        Quiz("로컬의 commit 기록을 GitHub에 올리는 Git 명령어는?",
+             ["git add", "git commit", "git push", "git pull"], 3),
+    ]
+
+
 def main():
     """게임 전체 흐름을 담당한다."""
     while True:
